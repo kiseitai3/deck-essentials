@@ -43,7 +43,7 @@ if [[ "$(< os-update)" != "$(< os)" ]]; then
   while read -r line
     do
       pre-install "$line"
-      pacman -S "$line" --noconfirm
+      pacman -S "$line" --noconfirm --needed
       post-install "$line"
   done < utils.txt
 
