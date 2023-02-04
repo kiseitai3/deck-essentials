@@ -1,0 +1,11 @@
+[Unit]
+Description=SteamDeck System Essentials
+After=network-online.target
+Wants=network-online.target
+[Service]
+Type=oneshot
+User=root
+ExecStart=/home/deck/.sys-essentials/sys-essentials.sh
+WorkingDirectory=/home/deck/.sys-essentials/
+[Install]
+WantedBy=multi-user.target

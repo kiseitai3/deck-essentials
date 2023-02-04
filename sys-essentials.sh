@@ -1,0 +1,62 @@
+#!/bin/bash
+if [[ $(id -u) != 0 ]]; then
+  pkexec "$0"
+  exit 0
+fi
+
+pre-install () {
+  case $1 in
+    nfs-utils)
+      mv -f /etc/request-key.d/id_resolver.conf /etc/request-key.d/id_resolver.conf.bak
+      rm -r /var/lib/nfs/
+    ;;
+  esac
+}
+
+post-install () {
+  case $1 in
+    networkmanager-openvpn)
+      systemctl restart NetworkManager
+    ;;
+  esac
+}
+
+mkdir -p /home/deck/.sys-essentials >/dev/null 2>&1
+pushd /home/deck/.sys-essentials
+
+cp /etc/os-release os-update
+
+if [ ! -f "os" ]; then
+  touch os
+fi
+
+if [[ "$(< os-update)" != "$(< os)" ]]; then
+  echo "Installing" > status.txt
+
+  steamos-readonly disable
+
+  pacman-key --init
+  pacman-key --populate
+
+  pacman -Syy
+
+  while read -r line
+    do
+      pre-install "$line"
+      pacman -S "$line" --noconfirm
+      post-install "$line"
+  done < utils.txt
+
+  steamos-readonly enable
+
+  cp os-update os
+
+  echo "Restart" > status.txt
+
+else
+
+  echo "Installed" > status.txt
+
+fi
+
+popd
