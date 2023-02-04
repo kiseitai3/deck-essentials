@@ -81,11 +81,13 @@ if [[ "$(< os-update)" != "$(< os)" ]]; then
     do
       uninstall_util "$line"
   done < remove_utils.txt
+  echo "" > remove_utils.txt
 
   while read -r line
     do
       uninstall_config "$line"
   done < remove_configs.txt
+  echo "" > remove_configs.txt
 
   steamos-readonly enable
 
