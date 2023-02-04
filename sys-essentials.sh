@@ -13,6 +13,30 @@ pre-install () {
   esac
 }
 
+install_util () {
+  pacman -S "$1" --noconfirm --needed
+}
+
+uninstall_util () {
+  pacman -R "$1"
+}
+
+install_config () {
+  case $1 in
+    bluetooth-mic-config)
+      echo "Stub"
+    ;;
+  esac
+}
+
+uninstall_config () {
+  case $1 in
+    bluetooth-mic-config)
+      echo "Stub"
+    ;;
+  esac
+}
+
 post-install () {
   case $1 in
     networkmanager-openvpn)
@@ -44,9 +68,24 @@ if [[ "$(< os-update)" != "$(< os)" ]]; then
   while read -r line
     do
       pre-install "$line"
-      pacman -S "$line" --noconfirm --needed
+      install_util "$line"
       post-install "$line"
   done < utils.txt
+
+  while read -r line
+    do
+      install_config "$line"
+  done < configs.txt
+
+  while read -r line
+    do
+      uninstall_util "$line"
+  done < remove_utils.txt
+
+  while read -r line
+    do
+      uninstall_config "$line"
+  done < remove_configs.txt
 
   steamos-readonly enable
 
