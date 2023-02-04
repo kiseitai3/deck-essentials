@@ -24,7 +24,11 @@ uninstall_util () {
 install_config () {
   case $1 in
     bluetooth-mic-config)
-      echo "Stub"
+      TARGET=""
+      if [ -f "$TARGET" ] && [ ! -f "$TARGET.bak" ]; then
+        mv -f "$TARGET" "$TARGET.bak"
+      fi
+      cp "$1" "$TARGET"
     ;;
   esac
 }
@@ -32,7 +36,12 @@ install_config () {
 uninstall_config () {
   case $1 in
     bluetooth-mic-config)
-      echo "Stub"
+      TARGET=""
+      if [ -f "$TARGET.bak" ]; then
+        mv -f "$TARGET.bak" "$TARGET"
+      else
+        rm "$TARGET"
+      fi
     ;;
   esac
 }
