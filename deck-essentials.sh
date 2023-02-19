@@ -61,8 +61,8 @@ post-install () {
   esac
 }
 
-mkdir -p /home/deck/.sys-essentials >/dev/null 2>&1
-pushd /home/deck/.sys-essentials
+mkdir -p /home/deck/.deck-essentials >/dev/null 2>&1
+pushd /home/deck/.deck-essentials
 
 cp /etc/os-release os-update
 
