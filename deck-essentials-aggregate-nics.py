@@ -16,7 +16,7 @@ def aggregate():
   ret = subprocess.check_output('ls /sys/class/net', shell=True).decode().strip().split('\n')
 
   #Filter the interface list by wireless or ethernet. We don't want anything else.
-  available_if = [i for i in ret if 'wl' in i.lower() or 'en' in i.lower()]
+  available_if = [i for i in ret if i.startswith('wl') or i.startswith('en')]
 
   #Now,let's register the aggregate interface. We want balance-alb to squeeze as much throughput 
   #in docked mode while preserving fault tolerance (aka undocking and losing the ethernet interface)
@@ -29,7 +29,7 @@ def aggregate():
   #Some latency may be introduced when some of the traffic is routed throught the wireless interface, but this is currently experimental.
   port = 1
   for interface in available_if:
-    if 'en' in interface:
+    if interface.startswith('en'):
       subprocess.call('nmcli connection add type ethernet slave-type bond con-name bond0-port{} ifname {} master bond0'.format(port, interface),shell=True)
     else:
       subprocess.call('nmcli connection add type wifi slave-type bond con-name bond0-port{} ifname {} master bond0'.format(port, interface),shell=True)
