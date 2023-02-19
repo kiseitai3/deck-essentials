@@ -73,6 +73,8 @@ fi
 if [[ "$(< os-update)" != "$(< os)" ]]; then
   echo "Installing" > status.txt
   notify-send "System Upgraded" "Reinstalling missing sys-essentials packages!"
+  
+  systemd-sysext unmerge
 
   steamos-readonly disable
 
@@ -110,6 +112,8 @@ if [[ "$(< os-update)" != "$(< os)" ]]; then
   steamos-readonly enable
 
   cp os-update os
+  
+  systemd-sysext refresh
 
   echo "Restart" > status.txt
   notify-send "System Upgraded" "deck-essentials completed! You may need to restart the system for changes to take effects."
