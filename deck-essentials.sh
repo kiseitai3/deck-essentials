@@ -43,7 +43,7 @@ install_config () {
       cp "$1" "$TARGET"
     ;;
     aggregate-nic-config)
-      ./sys-essentials-aggregate-nics.py up
+      python3 deck-essentials-aggregate-nics.py up
     ;;
   esac
 }
@@ -59,7 +59,7 @@ uninstall_config () {
       fi
     ;;
     aggregate-nic-config)
-      ./sys-essentials-aggregate-nics.py down
+      python3 deck-essentials-aggregate-nics.py down
     ;;
   esac
 }
@@ -121,7 +121,7 @@ if [[ "$(< os-update)" != "$(< os)" ]]; then
   cp os-update os
 
   echo "Restart" > status.txt
-  notify-send "System Upgraded" "sys-essentials completed! You may need to restart the system for changes to take effects."
+  notify-send "System Upgraded" "deck-essentials completed! You may need to restart the system for changes to take effects."
 
 else
 
