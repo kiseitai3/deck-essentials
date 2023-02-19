@@ -50,7 +50,7 @@ def aggregate():
     else:
       for profile in wifi_profiles:
         cmd = 'nmcli connection add type wifi slave-type bond con-name bond0-port{} ifname {} master bond0 ssid {} con-name bond0-port{}'
-              .format(port, interface, profile[0], port)
+        .format(port, interface, profile[0], port)
         print(cmd)
         subprocess.call(cmd,shell=True)
     port += 1
