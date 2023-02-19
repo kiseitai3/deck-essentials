@@ -29,6 +29,20 @@ def aggregate():
     line = r.split(' ')
     line = [cell for cell in line if len(cell)]
     wifi_profiles.append(line)
+  
+  #Now, get all of the ethernet connections like we did for the wifi
+  ret = subprocess.check_output('nmcli connection show | grep ethernet', shell=True).decode().strip().split('\n')
+  eth_profiles = []
+  for r in ret:
+    line = r.split(' ')
+    line = [cell for cell in line if len(cell)]
+    wifi_profiles.append(line)
+    
+  #Let's make sure these connections are turned off and set to never autoconnect. If all goes well, we will autoconnect via the bond interface
+  profiles = wifi_profiles + eth_profiles
+  for profile in profiles:
+    subprocess.call('nmcli connection down {}'.format(profile[0]),shell=True)
+    subprocess.call('nmcli connection modify {} autoconnect no'.format(profile[0]),shell=True)
 
   #Now,let's register the aggregate interface. We want balance-alb to squeeze as much throughput 
   #in docked mode while preserving fault tolerance (aka undocking and losing the ethernet interface)
