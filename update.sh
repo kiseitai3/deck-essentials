@@ -8,7 +8,7 @@ pushd /home/deck/
 
 ./.deck-essentials/uninstall.sh
 
-git clone 
+git clone https://github.com/kiseitai3/deck-essentials.git
 
 mv deck-essentials .deck-essentials
 
