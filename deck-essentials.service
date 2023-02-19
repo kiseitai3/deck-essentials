@@ -5,7 +5,7 @@ Wants=network-online.target
 [Service]
 Type=oneshot
 User=root
-ExecStart=/home/deck/.sys-essentials/sys-essentials.sh
-WorkingDirectory=/home/deck/.sys-essentials/
+ExecStart=/home/deck/.deck-essentials/deck-essentials.sh
+WorkingDirectory=/home/deck/.deck-essentials/
 [Install]
 WantedBy=multi-user.target
