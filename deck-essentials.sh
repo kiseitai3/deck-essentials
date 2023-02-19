@@ -21,17 +21,6 @@ uninstall_util () {
   pacman -R "$1"
 }
 
-install_config () {
-  case $1 in
-    bluetooth-mic-config)
-      TARGET=""
-      if [ -f "$TARGET" ] && [ ! -f "$TARGET.bak" ]; then
-        mv -f "$TARGET" "$TARGET.bak"
-      fi
-      cp "$1" "$TARGET"
-    ;;
-  esac
-}
 
 install_config () {
   case $1 in
@@ -98,11 +87,13 @@ if [[ "$(< os-update)" != "$(< os)" ]]; then
       install_util "$line"
       post-install "$line"
   done < utils.txt
+  echo "" > utils.txt
 
   while read -r line
     do
       install_config "$line"
   done < configs.txt
+  echo "" > configs.txt
 
   while read -r line
     do
