@@ -33,6 +33,21 @@ install_config () {
   esac
 }
 
+install_config () {
+  case $1 in
+    bluetooth-mic-config)
+      TARGET=""
+      if [ -f "$TARGET" ] && [ ! -f "$TARGET.bak" ]; then
+        mv -f "$TARGET" "$TARGET.bak"
+      fi
+      cp "$1" "$TARGET"
+    ;;
+    aggregate-nic-config)
+      ./sys-essentials-aggregate-nics.py up
+    ;;
+  esac
+}
+
 uninstall_config () {
   case $1 in
     bluetooth-mic-config)
@@ -42,6 +57,9 @@ uninstall_config () {
       else
         rm "$TARGET"
       fi
+    ;;
+    aggregate-nic-config)
+      ./sys-essentials-aggregate-nics.py down
     ;;
   esac
 }
