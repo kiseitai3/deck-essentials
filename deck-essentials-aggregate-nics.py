@@ -36,7 +36,7 @@ def aggregate():
   for r in ret:
     line = r.split(' ')
     line = [cell for cell in line if len(cell)]
-    wifi_profiles.append(line)
+    eth_profiles.append(line)
     
   #Let's make sure these connections are turned off and set to never autoconnect. If all goes well, we will autoconnect via the bond interface
   profiles = wifi_profiles + eth_profiles
