@@ -48,10 +48,13 @@ def aggregate():
       subprocess.call(cmd,shell=True)
       primary_interface = interface
     else:
+      wifi_port = 1
       for profile in wifi_profiles:
-        cmd = 'nmcli connection add type wifi slave-type bond con-name bond0-port{} ifname {} master bond0 ssid {} con-name bond0-port{}'.format(port, interface, profile[0], port)
+        cmd = 'nmcli connection add type wifi slave-type bond con-name bond0-port{}-wifi{} ifname {} master bond0 ssid {} con-name '
+              'bond0-port{}-wifi{}'.format(port, wifi_port, interface, profile[0], port, wifi_port)
         print(cmd)
         subprocess.call(cmd,shell=True)
+        wifi_port += 1
     port += 1
     
   #Now, let's activate the interface and set a few final options
