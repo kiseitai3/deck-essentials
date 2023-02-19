@@ -28,15 +28,23 @@ def aggregate():
   #penalty due to the loss of the ethernet interface when undocked.
   #Some latency may be introduced when some of the traffic is routed throught the wireless interface, but this is currently experimental.
   port = 1
+  primary_interface = ""
   for interface in available_if:
     if interface.startswith('en'):
-      subprocess.call('nmcli connection add type ethernet slave-type bond con-name bond0-port{} ifname {} master bond0'.format(port, interface),shell=True)
+      cmd = 'nmcli connection add type ethernet slave-type bond con-name bond0-port{} ifname {} master bond0'.format(port, interface)
+      print(cmd)
+      subprocess.call(cmd,shell=True)
+      primary_interface = interface
     else:
-      subprocess.call('nmcli connection add type wifi slave-type bond con-name bond0-port{} ifname {} master bond0'.format(port, interface),shell=True)
+      cmd = 'nmcli connection add type wifi slave-type bond con-name bond0-port{} ifname {} master bond0'.format(port, interface)
+      print(cmd)
+      subprocess.call(cmd,shell=True)
     port += 1
     
-  #Now, let's activate the interface
+  #Now, let's activate the interface and set a few final options
   subprocess.call('nmcli connection up bond0', shell=True)
+  print('nmcli connection modify bond0 +bond.options "primary={}"'.format(primary_interface))
+  subprocess.call('nmcli connection modify bond0 +bond.options "primary={}"'.format(primary_interface), shell=True)
   subprocess.call('nmcli connection modify bond0 connection.autoconnect-slaves 1', shell=True)
   subprocess.call('nmcli connection up bond0', shell=True)
     
