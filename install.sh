@@ -5,15 +5,12 @@ if [[ $(id -u) != 0 ]]; then
 fi
 
 pushd /home/deck/
-#git clone
-#rm -r .sys-essentials
-#mv sys-essentials .sys-essentials
-cd .sys-essentials
-./sys-essentials.sh
-cp ./sys-essentials.service /etc/systemd/system/sys-essentials.service
+cd .deck-essentials
+./deck-essentials.sh
+cp ./deck-essentials.service /etc/systemd/system/deck-essentials.service
 
 systemctl daemon-reload
-systemctl enable sys-essentials.service --now
+systemctl enable deck-essentials.service --now
 
 chown -R root:root ./
 chmod -R 755 ./
