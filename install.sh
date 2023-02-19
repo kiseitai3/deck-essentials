@@ -15,5 +15,6 @@ systemctl enable deck-essentials.service --now
 chown -R root:root ./
 chmod -R 755 ./
 chmod -R 666 *.txt
+chmod 666 os*
 
 popd
