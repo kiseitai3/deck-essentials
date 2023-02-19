@@ -89,13 +89,11 @@ if [[ "$(< os-update)" != "$(< os)" ]]; then
       install_util "$line"
       post-install "$line"
   done < utils.txt
-  echo "" > utils.txt
 
   while read -r line
     do
       install_config "$line"
   done < configs.txt
-  echo "" > configs.txt
 
   while read -r line
     do
