@@ -6,7 +6,6 @@ fi
 
 pushd /home/deck/
 cd .deck-essentials
-./deck-essentials.sh
 cp ./deck-essentials.service /etc/systemd/system/deck-essentials.service
 
 systemctl daemon-reload
