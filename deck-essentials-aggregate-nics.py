@@ -18,6 +18,17 @@ def aggregate():
 
   #Filter the interface list by wireless or ethernet. We don't want anything else.
   available_if = [i for i in ret if i.startswith('wl') or i.startswith('en')]
+  
+  #Fetch the existing wifi profiles. We need to bind the ssids later to the wifi slave so we can seemlessly connect between known wifi connections.
+  #It should still fail if moving the deck to a new network, but we can always rerun this script to regenerate a new bond profile.
+  ret = subprocess.check_output('nmcli connection show | grep wifi', shell=True).decode().strip().split('\n')
+  
+  #Filter the garbage out of the returned data
+  wifi_profiles = []
+  for r in ret:
+    line = r.split(' ')
+    line = [cell for cell in line if len(cell)]
+    wifi_profiles.append(line)
 
   #Now,let's register the aggregate interface. We want balance-alb to squeeze as much throughput 
   #in docked mode while preserving fault tolerance (aka undocking and losing the ethernet interface)
@@ -37,9 +48,11 @@ def aggregate():
       subprocess.call(cmd,shell=True)
       primary_interface = interface
     else:
-      cmd = 'nmcli connection add type wifi slave-type bond con-name bond0-port{} ifname {} master bond0'.format(port, interface)
-      print(cmd)
-      subprocess.call(cmd,shell=True)
+      for profile in wifi_profiles:
+        cmd = 'nmcli connection add type wifi slave-type bond con-name bond0-port{} ifname {} master bond0 ssid {} con-name bond0-port{}'
+              .format(port, interface, profile[0], port)
+        print(cmd)
+        subprocess.call(cmd,shell=True)
     port += 1
     
   #Now, let's activate the interface and set a few final options
@@ -50,10 +63,15 @@ def aggregate():
   subprocess.call('nmcli connection up bond0', shell=True)
     
 def deaggregate():
-  #Stop the connection
-  subprocess.call('nmcli connection down bond0', shell=True)
-  #Remove the connection
-  subprocess.call('nmcli connection delete bond0', shell=True)
+  #We first need to list all bond connections and delete them in reverse order (ports first then the master
+  ret = subprocess.check_output('nmcli connection show | grep bond0', shell=True).decode().strip().split('\n')
+  connections = ret[::-1]
+  for connection in connections:
+    connection_name = connection.split(' ')[0]
+    #Stop the connection
+    subprocess.call('nmcli connection down {}'.format(connection_name), shell=True)
+    #Remove the connection
+    subprocess.call('nmcli connection delete {}'.format(connection_name), shell=True)
   
 if len(argv) > 1:
   if argv[1] == 'up':
