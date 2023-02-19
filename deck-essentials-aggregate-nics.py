@@ -13,6 +13,7 @@ def aggregate():
   # *   ww -- wwan
   # *   lo -- loopback
   # *   vir -- virtual
+  # *   br  --  bridge
   ret = subprocess.check_output('ls /sys/class/net', shell=True).decode().strip().split('\n')
 
   #Filter the interface list by wireless or ethernet. We don't want anything else.
