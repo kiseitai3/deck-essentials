@@ -69,8 +69,11 @@ def aggregate():
         cmd = 'nmcli connection add type wifi slave-type bond con-name bond0-port{}-wifi{} ifname {} master bond0 ssid {} con-name bond0-port{}-wifi{}'.format(port, wifi_port, interface, profile[0], port, wifi_port)
         print(cmd)
         subprocess.call(cmd,shell=True)
-        subprocess.call('nmcli connection modify bond0-port{}-wifi{} wifi-sec.key-mgmt wpa-psk wifi-sec.psk "{}"'.format(port, wifi_port, password),shell=True)
-        subprocess.call('nmcli connection up bond0-port{}-wifi{}'.format(port, wifi_port),shell=True)
+        try:
+          subprocess.call('nmcli connection modify bond0-port{}-wifi{} wifi-sec.key-mgmt wpa-psk wifi-sec.psk "{}"'.format(port, wifi_port, password),shell=True)
+          subprocess.call('nmcli connection up bond0-port{}-wifi{}'.format(port, wifi_port),shell=True)
+        except:
+          subprocess.call('nmcli connection delete bond0-port{}-wifi{}'.format(port, wifi_port)
         wifi_port += 1
     port += 1
     
