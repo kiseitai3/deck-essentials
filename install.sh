@@ -4,7 +4,7 @@ if [[ $(id -u) != 0 ]]; then
   exit 0
 fi
 
-pushd $HOME/
+pushd /home/deck/
 cd .deck-essentials
 cp ./deck-essentials.service /etc/systemd/system/deck-essentials.service
 
