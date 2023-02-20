@@ -65,9 +65,11 @@ def aggregate():
     else:
       wifi_port = 1
       for profile in wifi_profiles:
+        password = subprocess.check_output('nmcli --show-secrets connection show {} | grep 802-11-wireless-security.psk:'.format(profile),shell=True).decode().strip().split(':')[-1].strip()
         cmd = 'nmcli connection add type wifi slave-type bond con-name bond0-port{}-wifi{} ifname {} master bond0 ssid {} con-name bond0-port{}-wifi{}'.format(port, wifi_port, interface, profile[0], port, wifi_port)
         print(cmd)
         subprocess.call(cmd,shell=True)
+        subprocess.call('nmcli connection modify bond0-port{}-wifi{} wifi-sec.key-mgmt wpa-psk wifi-sec.psk {}'.format(port, wifi_port, password),shell=True)
         subprocess.call('nmcli connection up bond0-port{}-wifi{}'.format(port, wifi_port),shell=True)
         wifi_port += 1
     port += 1
