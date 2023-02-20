@@ -1,7 +1,7 @@
 # /etc/systemd/network/98-bond-inherit-mac.link
 # https://github.com/coreos/fedora-coreos-tracker/issues/919
 [Match]
-Type=bond
+Kind=bridge bond team
 
 [Link]
 MACAddressPolicy=none
