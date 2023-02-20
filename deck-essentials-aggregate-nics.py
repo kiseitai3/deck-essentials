@@ -70,6 +70,11 @@ def aggregate():
         wifi_port += 1
     port += 1
     
+  #let's copy the mac policy so the bond can work properly.
+  #Courtesy of https://github.com/coreos/fedora-coreos-tracker/issues/919
+  subprocess.call('cp 98-bond-inherit-mac.link /etc/systemd/network/98-bond-inherit-mac.link', shell=True)
+  subprocess.call('systemctl daemon-reload', shell=True)
+  
   #Now, let's activate the interface and set a few final options
   #subprocess.call('nmcli connection up bond0', shell=True)
   print('nmcli connection modify bond0 +bond.options "primary={}"'.format(primary_interface))
