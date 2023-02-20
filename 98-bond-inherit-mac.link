@@ -1,0 +1,6 @@
+# /etc/systemd/network/98-bond-inherit-mac.link
+[Match]
+Type=bond
+
+[Link]
+MACAddressPolicy=none
