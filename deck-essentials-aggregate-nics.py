@@ -73,7 +73,7 @@ def aggregate():
           subprocess.call('nmcli connection modify bond0-port{}-wifi{} wifi-sec.key-mgmt wpa-psk wifi-sec.psk "{}"'.format(port, wifi_port, password),shell=True)
           subprocess.call('nmcli connection up bond0-port{}-wifi{}'.format(port, wifi_port),shell=True)
         except:
-          subprocess.call('nmcli connection delete bond0-port{}-wifi{}'.format(port, wifi_port)
+          subprocess.call('nmcli connection delete bond0-port{}-wifi{}'.format(port, wifi_port))
         wifi_port += 1
     port += 1
     
