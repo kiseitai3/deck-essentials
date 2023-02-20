@@ -60,6 +60,7 @@ def aggregate():
       cmd = 'nmcli connection add type ethernet slave-type bond con-name bond0-port{} ifname {} master bond0'.format(port, interface)
       print(cmd)
       subprocess.call(cmd,shell=True)
+      subprocess.call('nmcli connection up bond0-port{}'.format(port),shell=True)
       primary_interface = interface
     else:
       wifi_port = 1
@@ -67,6 +68,7 @@ def aggregate():
         cmd = 'nmcli connection add type wifi slave-type bond con-name bond0-port{}-wifi{} ifname {} master bond0 ssid {} con-name bond0-port{}-wifi{}'.format(port, wifi_port, interface, profile[0], port, wifi_port)
         print(cmd)
         subprocess.call(cmd,shell=True)
+        subprocess.call('nmcli connection up bond0-port{}-wifi{}'.format(port, wifi_port),shell=True)
         wifi_port += 1
     port += 1
     
