@@ -11,7 +11,7 @@ systemctl daemon-reload
 
 rm /etc/systemd/system/deck-essentials.service
 
-pushd $HOME/
+pushd /home/deck/
 rm -r .deck-essentials
 
 popd
