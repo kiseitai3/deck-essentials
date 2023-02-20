@@ -26,8 +26,8 @@ def aggregate():
   #Filter the garbage out of the returned data
   wifi_profiles = []
   for r in ret:
-    line = r.split(' ')
-    line = [cell for cell in line if len(cell)]
+    line = r.split('  ')
+    line = [cell.strip() for cell in line if len(cell)]
     wifi_profiles.append(line)
   
   #Now, get all of the ethernet connections like we did for the wifi
