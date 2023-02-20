@@ -43,7 +43,7 @@ def aggregate():
   for profile in profiles:
     subprocess.call('nmcli connection down {}'.format(profile[0]),shell=True)
     subprocess.call('nmcli connection modify {} autoconnect no'.format(profile[0]),shell=True)
-"""
+
   #Now,let's register the aggregate interface. We want balance-alb to squeeze as much throughput 
   #in docked mode while preserving fault tolerance (aka undocking and losing the ethernet interface)
   subprocess.call('nmcli connection add type bond con-name bond0 ifname bond0 bond.options "mode=balance-alb,fail_over_mac=active,miimon=100,primary_reselect=always,updelay=200"', shell=True)
@@ -88,18 +88,6 @@ def aggregate():
   #subprocess.call('nmcli connection modify bond0 +bond.options "primary={}"'.format(primary_interface), shell=True)
   subprocess.call('nmcli connection modify bond0 connection.autoconnect-slaves 1', shell=True)
   subprocess.call('nmcli connection up bond0', shell=True)
-"""
-  # https://askubuntu.com/questions/1299974/bond-fails-to-acquire-dhcp-lease-on-ubuntu-server-20-04
-  netdev = "[NetDev]\nName=bond0\nKind=bond\n\n[Bond]\nMode=balance-alb"
-  bond = "[Match]\nName=bond0\n\n[Network]\nDHCP=ipv4\nLinkLocalAddressing=ipv6\nConfigureWithoutCarrier=yes\n\n[DHCP]\nRouteMetric=100\nUseMTU=true"
-  nic = "[Match]\nName={}\n\n[Network]\nLinkLocalAddressing=no\nBond=bond0"
-  for interface in available_if:
-    with open('/run/systemd/network/10-netplan-{}.network'.format(interface), 'wt') as fp:
-      fp.write(nic.format(interface))
-  with open('/run/systemd/network/10-netplan-bond0.network', 'wt') as fp:
-    fp.write(bond)
-  with open('/run/systemd/network/10-netplan-bond0.netdev', 'wt') as fp:
-    fp.write(netdev)
       
     
 def deaggregate():
