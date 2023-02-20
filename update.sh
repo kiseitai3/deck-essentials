@@ -4,7 +4,7 @@ if [[ $(id -u) != 0 ]]; then
   exit 0
 fi
 
-pushd /home/deck/
+pushd $HOME/
 
 ./.deck-essentials/uninstall.sh
 
