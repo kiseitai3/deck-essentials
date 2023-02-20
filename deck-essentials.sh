@@ -32,8 +32,8 @@ install_config () {
       cp "$1" "$TARGET"
     ;;
     aggregate-nic-config)
-      python3 deck-essentials-aggregate-nics.py down
-      python3 deck-essentials-aggregate-nics.py up
+      #python3 deck-essentials-aggregate-nics.py down
+      #python3 deck-essentials-aggregate-nics.py up
     ;;
   esac
 }
