@@ -46,7 +46,7 @@ def aggregate():
 
   #Now,let's register the aggregate interface. We want balance-alb to squeeze as much throughput 
   #in docked mode while preserving fault tolerance (aka undocking and losing the ethernet interface)
-  subprocess.call('nmcli connection add type bond con-name bond0 ifname bond0 bond.options "mode=balance-alb,miimon=1000"', shell=True)
+  subprocess.call('nmcli connection add type bond con-name bond0 ifname bond0 bond.options "mode=balance-alb,fail_over_mac=active,miimon=100,primary_reselect=always,updelay=200"', shell=True)
 
   #Now, we iterate through every interface available to us and bind them to our aggregate bond.
   #If we get this correctly, we can dock and undock while preserving at least one link for gaming over NFS.
@@ -79,8 +79,8 @@ def aggregate():
   
   #Now, let's activate the interface and set a few final options
   #subprocess.call('nmcli connection up bond0', shell=True)
-  print('nmcli connection modify bond0 +bond.options "primary={}"'.format(primary_interface))
-  subprocess.call('nmcli connection modify bond0 +bond.options "primary={}"'.format(primary_interface), shell=True)
+  #print('nmcli connection modify bond0 +bond.options "primary={}"'.format(primary_interface))
+  #subprocess.call('nmcli connection modify bond0 +bond.options "primary={}"'.format(primary_interface), shell=True)
   subprocess.call('nmcli connection modify bond0 connection.autoconnect-slaves 1', shell=True)
   subprocess.call('nmcli connection up bond0', shell=True)
     
