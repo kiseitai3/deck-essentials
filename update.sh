@@ -6,6 +6,8 @@ fi
 
 pushd $HOME/
 
+echo "using home: $HOME"
+
 ./.deck-essentials/uninstall.sh
 
 git clone https://github.com/kiseitai3/deck-essentials.git
