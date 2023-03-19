@@ -112,6 +112,8 @@ def aggregate():
   #subprocess.call('nmcli connection modify bond0 +bond.options "primary={}"'.format(primary_interface), shell=True)
   #subprocess.call('nmcli connection modify bond0 connection.autoconnect-slaves 1', shell=True)
   #subprocess.call('nmcli connection up bond0', shell=True)
+  subprocess.call('systemctl enable systemd-resolved --now', shell=True)
+  subprocess.call('systemctl enable systemd-networkd --now', shell=True)
       
     
 def deaggregate():
