@@ -118,14 +118,17 @@ def aggregate():
     
 def deaggregate():
   #We first need to list all bond connections and delete them in reverse order (ports first then the master
-  ret = subprocess.check_output('nmcli connection show | grep bond0', shell=True).decode().strip().split('\n')
-  connections = ret[::-1]
-  for connection in connections:
-    connection_name = connection.split(' ')[0]
-    #Stop the connection
-    subprocess.call('nmcli connection down {}'.format(connection_name), shell=True)
-    #Remove the connection
-    subprocess.call('nmcli connection delete {}'.format(connection_name), shell=True)
+  try:
+    ret = subprocess.check_output('nmcli connection show | grep bond0', shell=True).decode().strip().split('\n')
+    connections = ret[::-1]
+    for connection in connections:
+      connection_name = connection.split(' ')[0]
+      #Stop the connection
+      subprocess.call('nmcli connection down {}'.format(connection_name), shell=True)
+      #Remove the connection
+      subprocess.call('nmcli connection delete {}'.format(connection_name), shell=True)
+  except:
+    pass
   subprocess.call('rm /etc/systemd/network/*deck-essentials.*', shell=True)
   
 if len(argv) > 1:
