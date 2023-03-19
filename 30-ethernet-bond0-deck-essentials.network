@@ -3,4 +3,4 @@ Name={eth}
 
 [Network]
 Bond=bond0
-PrimarySlave=true
+PrimarySlave={primary}
