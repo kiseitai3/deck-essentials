@@ -79,7 +79,7 @@ def aggregate():
           target.write(conf.read().format(eth=interface))
       with open('30-ethernet-bond0-deck-essentials.network', 'rt') as conf:
         with open('/etc/systemd/network/30-ethernet-bond0-deck-essentials.network', 'wt') as target:
-          target.write(conf.read().format(eth=interface, primary=bool(len(primary_interface))))
+          target.write(conf.read().format(eth=interface, primary=not bool(len(primary_interface))))
       primary_interface = interface
     else:
       wifi_port = 1
