@@ -1,5 +1,5 @@
 [Match]
-Name=wlan0
+Name={wifi}
 
 [Network]
 Bond=bond0
