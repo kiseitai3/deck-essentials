@@ -19,24 +19,8 @@ def aggregate():
   #Filter the interface list by wireless or ethernet. We don't want anything else.
   available_if = [i for i in ret if i.startswith('wl') or i.startswith('en')]
   
-  #Fetch the existing wifi profiles. We need to bind the ssids later to the wifi slave so we can seemlessly connect between known wifi connections.
-  #It should still fail if moving the deck to a new network, but we can always rerun this script to regenerate a new bond profile.
-  ret = subprocess.check_output('nmcli connection show | grep wifi', shell=True).decode().strip().split('\n')
-  
-  #Filter the garbage out of the returned data
-  wifi_profiles = []
-  for r in ret:
-    line = r.split('  ')
-    line = [cell.strip() for cell in line if len(cell)]
-    wifi_profiles.append(line)
-  
-  #Now, get all of the ethernet connections like we did for the wifi
-  ret = subprocess.check_output('nmcli connection show | grep ethernet', shell=True).decode().strip().split('\n')
-  eth_profiles = []
-  for r in ret:
-    line = r.split(' ')
-    line = [cell for cell in line if len(cell)]
-    eth_profiles.append(line)
+  #Gather profiles set up by network manager so we can generate static configurations later
+  profiles = subprocess.check_output('ls /etc/NetworkManager/system-connections', shell=True).decode().strip().split('\n')
     
   #Let's make sure these connections are turned off and set to never autoconnect. If all goes well, we will autoconnect via the bond interface
   profiles = wifi_profiles + eth_profiles
@@ -46,20 +30,9 @@ def aggregate():
 
   #Now,let's register the aggregate interface. We want balance-alb to squeeze as much throughput 
   #in docked mode while preserving fault tolerance (aka undocking and losing the ethernet interface)
-  #subprocess.call('nmcli connection add type bond con-name bond0 ifname bond0 bond.options "mode=balance-alb,fail_over_mac=active,miimon=100,primary_reselect=always,updelay=200"', shell=True)
-  for interface in available_if:
-     if interface.startswith('en'):
-        with open('20-wired-deck-essentials.network', 'rt') as conf:
-          with open('/etc/systemd/network/20-wired-deck-essentials.network', 'wt') as target:
-            target.write(conf.read().format(eth=interface))
-     else:
-        with open('25-wireless-deck-essentials.network', 'rt') as conf:
-          with open('/etc/systemd/network/25-wireless-deck-essentials.network', 'wt') as target:
-            target.write(conf.read().format(wifi=interface))
   subprocess.call('cp 30-bond0-deck-essentials.netdev /etc/systemd/network/30-bond0-deck-essentials.netdev', shell=True)  
   subprocess.call('cp 30-bond0-deck-essentials.network /etc/systemd/network/30-bond0-deck-essentials.network', shell=True)
-     
-  
+  subprocess.call('cp supplicant@.service /etc/systemd/system/supplicant@.service', shell=True)
   
   #Now, we iterate through every interface available to us and bind them to our aggregate bond.
   #If we get this correctly, we can dock and undock while preserving at least one link for gaming over NFS.
@@ -70,37 +43,25 @@ def aggregate():
   primary_interface = ""
   for interface in available_if:
     if interface.startswith('en'):
-      #cmd = 'nmcli connection add type ethernet slave-type bond con-name bond0-port{} ifname {} master bond0'.format(port, interface)
-      #print(cmd)
-      #subprocess.call(cmd,shell=True)
-      #subprocess.call('nmcli connection up bond0-port{}'.format(port),shell=True)
-      with open('20-wired-deck-essentials.network', 'rt') as conf:
-        with open('/etc/systemd/network/20-wired-deck-essentials.network', 'wt') as target:
-          target.write(conf.read().format(eth=interface))
       with open('30-ethernet-bond0-deck-essentials.network', 'rt') as conf:
         with open('/etc/systemd/network/30-ethernet-bond0-deck-essentials.network', 'wt') as target:
           target.write(conf.read().format(eth=interface, primary=not bool(len(primary_interface))))
       primary_interface = interface
     else:
-      wifi_port = 1
-      #for profile in wifi_profiles:
-        #password = subprocess.check_output('nmcli --show-secrets connection show "{}" | grep 802-11-wireless-security.psk:'.format(profile[0]),shell=True).decode().strip().split(':')[-1].strip()
-        #cmd = 'nmcli connection add type wifi slave-type bond con-name bond0-port{}-wifi{} ifname {} master bond0 ssid {} con-name bond0-port{}-wifi{}'.format(port, wifi_port, interface, profile[0], port, wifi_port)
-        #print(cmd)
-        #subprocess.call(cmd,shell=True)
-        #try:
-        #  subprocess.call('nmcli connection modify bond0-port{}-wifi{} wifi-sec.key-mgmt wpa-psk wifi-sec.psk "{}"'.format(port, wifi_port, password),shell=True)
-        #  subprocess.call('nmcli connection up bond0-port{}-wifi{}'.format(port, wifi_port),shell=True)
-        #except:
-        #  subprocess.call('nmcli connection delete bond0-port{}-wifi{}'.format(port, wifi_port))
-        #wifi_port += 1
-      with open('25-wireless-deck-essentials.network', 'rt') as conf:
-        with open('/etc/systemd/network/25-wireless-deck-essentials.network', 'wt') as target:
-          target.write(conf.read().format(wifi=interface))
+      wifi_connections = []
+      for profile in wifi_profiles:
+        try:
+          password = subprocess.check_output('cat /etc/NetworkManager/system-connections/{} | grep psk='.format(profile),shell=True).decode().strip()
+          if len(password):
+            wifi_connections.append('network={\n\tssid="{ssid}"\n\tpsk={psk}\n}'.format(ssid=profile.replace('.nmconnection', ''), psk=password))
+      
       with open('30-wifi-bond0-deck-essentials.network', 'rt') as conf:
         with open('/etc/systemd/network/30-wifi-bond0-deck-essentials.network', 'wt') as target:
           target.write(conf.read().format(wifi=interface))
-    port += 1
+      with open('wpa_supplicant.conf', 'rt') as conf:
+        with open('/etc/wpa_supplicant/wpa_supplicant.conf', 'wt') as target:
+          target.write(conf.read().format(connections='\n'.join(wifi_connections)))
+      subprocess.call('systemctl enable supplicant@{} --now'.format(interface), shell=True)
     
   #let's copy the mac policy so the bond can work properly.
   #Courtesy of https://github.com/coreos/fedora-coreos-tracker/issues/919
@@ -114,6 +75,7 @@ def aggregate():
   #subprocess.call('nmcli connection up bond0', shell=True)
   subprocess.call('systemctl enable systemd-resolved --now', shell=True)
   subprocess.call('systemctl enable systemd-networkd --now', shell=True)
+  subprocess.call('systemctl daemon-reload', shell=True)
       
     
 def deaggregate():
@@ -129,7 +91,16 @@ def deaggregate():
       subprocess.call('nmcli connection delete {}'.format(connection_name), shell=True)
   except:
     pass
+  profiles = subprocess.check_output('ls /etc/NetworkManager/system-connections', shell=True).decode().strip().split('\n')
   subprocess.call('rm /etc/systemd/network/*deck-essentials.*', shell=True)
+  for profile in profiles:
+    try:
+      subprocess.call('systemctl stop supplicant@{}'.format(profile.replace('.nmconnection', '')), shell=True)
+      subprocess.call('systemctl disable supplicant@{}'.format(profile.replace('.nmconnection', '')), shell=True)
+    except:
+      pass
+  subprocess.call('rm -f /etc/systemd/system/supplicant@.service', shell=True)
+  subprocess.call('systemctl daemon-reload', shell=True)
   
 if len(argv) > 1:
   if argv[1] == 'up':
