@@ -54,6 +54,8 @@ def aggregate():
           password = subprocess.check_output('cat /etc/NetworkManager/system-connections/{} | grep psk='.format(profile),shell=True).decode().strip()
           if len(password):
             wifi_connections.append('network={\n\tssid="{ssid}"\n\tpsk={psk}\n}'.format(ssid=profile.replace('.nmconnection', ''), psk=password))
+        except:
+          pass
       
       with open('30-wifi-bond0-deck-essentials.network', 'rt') as conf:
         with open('/etc/systemd/network/30-wifi-bond0-deck-essentials.network', 'wt') as target:
