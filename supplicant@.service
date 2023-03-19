@@ -1,0 +1,29 @@
+
+[Unit]
+Description= wpa_supplicant on %P
+Documentation= man:wpa_supplicant(8) man:wpa_cli(8) man:wpa_supplicant.conf(5) man:wpa_passphrase(8)
+
+Wants= network-pre.target
+Before= network-pre.target
+
+BindsTo= sys-subsystem-net-devices-%i.device
+
+[Service]
+# Disable legacy 802.11b bitrates.
+ExecStartPre=-/usr/bin/iw %I set bitrates legacy-2.4  6 9 12 18 24 36 48 54
+
+ExecStart= /usr/bin/wpa_supplicant -c/etc/wpa_supplicant/wpa_supplicant.conf -Dnl80211,wext,wired -i %I
+ExecStartPost=-/usr/bin/sh -c "/usr/bin/iw phy phy`iw dev %I info|grep wiphy|cut -d' ' -f2` set distance 10"
+
+ExecReload= /usr/bin/wpa_cli -i %I reconfigure
+ExecReload= /usr/bin/wpa_cli -i %I reassociate
+
+ExecStop= /usr/bin/wpa_cli -i %I terminate
+
+# Reset bitrates.
+ExecStopPost=-/usr/bin/iw %I set bitrates
+
+Restart= on-abnormal
+
+[Install]
+WantedBy= sys-subsystem-net-devices-%i.device
