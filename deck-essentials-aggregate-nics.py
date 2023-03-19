@@ -46,8 +46,21 @@ def aggregate():
 
   #Now,let's register the aggregate interface. We want balance-alb to squeeze as much throughput 
   #in docked mode while preserving fault tolerance (aka undocking and losing the ethernet interface)
-  subprocess.call('nmcli connection add type bond con-name bond0 ifname bond0 bond.options "mode=balance-alb,fail_over_mac=active,miimon=100,primary_reselect=always,updelay=200"', shell=True)
-
+  #subprocess.call('nmcli connection add type bond con-name bond0 ifname bond0 bond.options "mode=balance-alb,fail_over_mac=active,miimon=100,primary_reselect=always,updelay=200"', shell=True)
+  for interface in available_if:
+     if interface.startswith('en'):
+        with open('20-wired-deck-essentials.network', 'rt') as conf:
+          with open('/etc/systemd/network/20-wired-deck-essentials.network', 'wt') as target:
+            target.write(conf.read().format(eth=interface))
+     else:
+        with open('25-wireless-deck-essentials.network', 'rt') as conf:
+          with open('/etc/systemd/network/25-wireless-deck-essentials.network', 'wt') as target:
+            target.write(conf.read().format(wifi=interface))
+  subprocess.call('cp 30-bond0-deck-essentials.netdev /etc/systemd/network/30-bond0-deck-essentials.netdev', shell=True)  
+  subprocess.call('cp 30-bond0-deck-essentials.network /etc/systemd/network/30-bond0-deck-essentials.network', shell=True)
+     
+  
+  
   #Now, we iterate through every interface available to us and bind them to our aggregate bond.
   #If we get this correctly, we can dock and undock while preserving at least one link for gaming over NFS.
   #Of course, be ware of issues due to loss of bandwidth due to going from 2 interfaces to 1 and the latency
@@ -57,37 +70,48 @@ def aggregate():
   primary_interface = ""
   for interface in available_if:
     if interface.startswith('en'):
-      cmd = 'nmcli connection add type ethernet slave-type bond con-name bond0-port{} ifname {} master bond0'.format(port, interface)
-      print(cmd)
-      subprocess.call(cmd,shell=True)
-      subprocess.call('nmcli connection up bond0-port{}'.format(port),shell=True)
+      #cmd = 'nmcli connection add type ethernet slave-type bond con-name bond0-port{} ifname {} master bond0'.format(port, interface)
+      #print(cmd)
+      #subprocess.call(cmd,shell=True)
+      #subprocess.call('nmcli connection up bond0-port{}'.format(port),shell=True)
+      with open('20-wired-deck-essentials.network', 'rt') as conf:
+        with open('/etc/systemd/network/20-wired-deck-essentials.network', 'wt') as target:
+          target.write(conf.read().format(eth=interface))
+      with open('30-ethernet-bond0-deck-essentials.network', 'rt') as conf:
+        with open('/etc/systemd/network/30-ethernet-bond0-deck-essentials.network', 'wt') as target:
+          target.write(conf.read().format(eth=interface, primary=bool(len(primary_interface))))
       primary_interface = interface
     else:
       wifi_port = 1
       for profile in wifi_profiles:
         password = subprocess.check_output('nmcli --show-secrets connection show "{}" | grep 802-11-wireless-security.psk:'.format(profile[0]),shell=True).decode().strip().split(':')[-1].strip()
-        cmd = 'nmcli connection add type wifi slave-type bond con-name bond0-port{}-wifi{} ifname {} master bond0 ssid {} con-name bond0-port{}-wifi{}'.format(port, wifi_port, interface, profile[0], port, wifi_port)
-        print(cmd)
-        subprocess.call(cmd,shell=True)
-        try:
-          subprocess.call('nmcli connection modify bond0-port{}-wifi{} wifi-sec.key-mgmt wpa-psk wifi-sec.psk "{}"'.format(port, wifi_port, password),shell=True)
-          subprocess.call('nmcli connection up bond0-port{}-wifi{}'.format(port, wifi_port),shell=True)
-        except:
-          subprocess.call('nmcli connection delete bond0-port{}-wifi{}'.format(port, wifi_port))
-        wifi_port += 1
+        #cmd = 'nmcli connection add type wifi slave-type bond con-name bond0-port{}-wifi{} ifname {} master bond0 ssid {} con-name bond0-port{}-wifi{}'.format(port, wifi_port, interface, profile[0], port, wifi_port)
+        #print(cmd)
+        #subprocess.call(cmd,shell=True)
+        #try:
+        #  subprocess.call('nmcli connection modify bond0-port{}-wifi{} wifi-sec.key-mgmt wpa-psk wifi-sec.psk "{}"'.format(port, wifi_port, password),shell=True)
+        #  subprocess.call('nmcli connection up bond0-port{}-wifi{}'.format(port, wifi_port),shell=True)
+        #except:
+        #  subprocess.call('nmcli connection delete bond0-port{}-wifi{}'.format(port, wifi_port))
+        #wifi_port += 1
+        with open('25-wireless-deck-essentials.network', 'rt') as conf:
+          with open('/etc/systemd/network/25-wireless-deck-essentials.network', 'wt') as target:
+            target.write(conf.read().format(wifi=interface))
+        with open('30-wifi-bond0-deck-essentials.network', 'rt') as conf:
+          with open('/etc/systemd/network/30-wifi-bond0-deck-essentials.network', 'wt') as target:
+            target.write(conf.read().format(wifi=interface))
     port += 1
     
   #let's copy the mac policy so the bond can work properly.
   #Courtesy of https://github.com/coreos/fedora-coreos-tracker/issues/919
-  subprocess.call('cp 98-bond-inherit-mac.link /etc/systemd/network/98-bond-inherit-mac.link', shell=True)
-  subprocess.call('systemctl daemon-reload', shell=True)
+  subprocess.call('cp 98-bond-inherit-mac-deck-essentials.link /etc/systemd/network/98-bond-inherit-mac-deck-essentials.link', shell=True)
   
   #Now, let's activate the interface and set a few final options
   #subprocess.call('nmcli connection up bond0', shell=True)
   #print('nmcli connection modify bond0 +bond.options "primary={}"'.format(primary_interface))
   #subprocess.call('nmcli connection modify bond0 +bond.options "primary={}"'.format(primary_interface), shell=True)
-  subprocess.call('nmcli connection modify bond0 connection.autoconnect-slaves 1', shell=True)
-  subprocess.call('nmcli connection up bond0', shell=True)
+  #subprocess.call('nmcli connection modify bond0 connection.autoconnect-slaves 1', shell=True)
+  #subprocess.call('nmcli connection up bond0', shell=True)
       
     
 def deaggregate():
@@ -100,6 +124,7 @@ def deaggregate():
     subprocess.call('nmcli connection down {}'.format(connection_name), shell=True)
     #Remove the connection
     subprocess.call('nmcli connection delete {}'.format(connection_name), shell=True)
+  subprocess.call('rm /etc/systemd/network/*deck-essentials.*', shell=True)
   
 if len(argv) > 1:
   if argv[1] == 'up':
