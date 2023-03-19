@@ -1,0 +1,6 @@
+[Match]
+Name={wifi}
+
+[Network]
+DHCP=yes
+IgnoreCarrierLoss=3s
