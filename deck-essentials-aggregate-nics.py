@@ -83,8 +83,8 @@ def aggregate():
       primary_interface = interface
     else:
       wifi_port = 1
-      for profile in wifi_profiles:
-        password = subprocess.check_output('nmcli --show-secrets connection show "{}" | grep 802-11-wireless-security.psk:'.format(profile[0]),shell=True).decode().strip().split(':')[-1].strip()
+      #for profile in wifi_profiles:
+        #password = subprocess.check_output('nmcli --show-secrets connection show "{}" | grep 802-11-wireless-security.psk:'.format(profile[0]),shell=True).decode().strip().split(':')[-1].strip()
         #cmd = 'nmcli connection add type wifi slave-type bond con-name bond0-port{}-wifi{} ifname {} master bond0 ssid {} con-name bond0-port{}-wifi{}'.format(port, wifi_port, interface, profile[0], port, wifi_port)
         #print(cmd)
         #subprocess.call(cmd,shell=True)
@@ -94,12 +94,12 @@ def aggregate():
         #except:
         #  subprocess.call('nmcli connection delete bond0-port{}-wifi{}'.format(port, wifi_port))
         #wifi_port += 1
-        with open('25-wireless-deck-essentials.network', 'rt') as conf:
-          with open('/etc/systemd/network/25-wireless-deck-essentials.network', 'wt') as target:
-            target.write(conf.read().format(wifi=interface))
-        with open('30-wifi-bond0-deck-essentials.network', 'rt') as conf:
-          with open('/etc/systemd/network/30-wifi-bond0-deck-essentials.network', 'wt') as target:
-            target.write(conf.read().format(wifi=interface))
+      with open('25-wireless-deck-essentials.network', 'rt') as conf:
+        with open('/etc/systemd/network/25-wireless-deck-essentials.network', 'wt') as target:
+          target.write(conf.read().format(wifi=interface))
+      with open('30-wifi-bond0-deck-essentials.network', 'rt') as conf:
+        with open('/etc/systemd/network/30-wifi-bond0-deck-essentials.network', 'wt') as target:
+          target.write(conf.read().format(wifi=interface))
     port += 1
     
   #let's copy the mac policy so the bond can work properly.
