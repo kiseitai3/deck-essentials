@@ -48,7 +48,7 @@ def aggregate():
       primary_interface = interface
     else:
       wifi_connections = []
-      for profile in wifi_profiles:
+      for profile in profiles:
         try:
           password = subprocess.check_output('cat /etc/NetworkManager/system-connections/{} | grep psk='.format(profile),shell=True).decode().strip()
           if len(password):
